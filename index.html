@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>贵阳·活力探索指南 (实名版)</title>
+    <style>
+        :root {
+            --bg-color: #F5F7FA;
+            --card-bg: #FFFFFF;
+            --text-main: #2D3436;
+            --text-sub: #636E72;
+            --primary: #FF7675; /* 活力珊瑚红 */
+            --gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%); /* 阳光橙渐变 */
+            --shadow: 0 8px 20px rgba(0,0,0,0.06);
+            --console-bg: #2d3436;
+            --console-text: #00cec9;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            padding-bottom: 100px;
+        }
+
+        /* --- 登录层样式 (新增) --- */
+        .login-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 40px;
+            transition: opacity 0.5s;
+        }
+        .login-box { width: 100%; max-width: 320px; text-align: center; }
+        .login-logo { font-size: 40px; margin-bottom: 20px; }
+        .login-title { font-size: 22px; font-weight: 800; color: #2D3436; margin-bottom: 10px; }
+        .login-desc { font-size: 13px; color: #636E72; margin-bottom: 40px; }
+        
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-label { font-size: 12px; color: #B2BEC3; margin-bottom: 5px; display: block; font-weight: bold; }
+        .custom-input {
+            width: 100%; padding: 15px; border: 2px solid #F0F0F0;
+            border-radius: 12px; font-size: 16px; outline: none;
+            transition: border-color 0.3s; background: #fff;
+        }
+        .custom-input:focus { border-color: #fda085; }
+
+        .btn-login {
+            width: 100%; padding: 15px; border: none; border-radius: 30px;
+            background: var(--gradient); color: #fff; font-size: 16px; font-weight: bold;
+            box-shadow: 0 10px 20px rgba(253, 160, 133, 0.4);
+            cursor: pointer; margin-top: 20px;
+        }
+        .btn-login:active { transform: scale(0.98); }
+
+        /* --- 主界面样式 --- */
+        .header {
+            padding: 40px 20px 30px;
+            background: var(--gradient);
+            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 10px 20px rgba(253, 160, 133, 0.3);
+            position: sticky; top: 0; z-index: 100; margin-bottom: 20px;
+        }
+        .header h1 { font-size: 24px; color: #fff; font-weight: 800; }
+        .header p {
+            font-size: 11px; color: rgba(255,255,255,0.95); margin-top: 8px;
+            background: rgba(255,255,255,0.2); display: inline-block;
+            padding: 4px 12px; border-radius: 15px; font-weight: 500;
+        }
+
+        .nav-scroll {
+            display: flex; overflow-x: auto; padding: 5px 20px 20px; gap: 12px;
+            scrollbar-width: none; 
+        }
+        .nav-scroll::-webkit-scrollbar { display: none; } 
+
+        .nav-item {
+            flex: 0 0 auto; padding: 8px 18px; background: #fff;
+            border-radius: 25px; font-size: 13px; color: var(--text-sub);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: all 0.3s;
+            cursor: pointer; font-weight: 600;
+        }
+        .nav-item.active {
+            background: var(--primary); color: #fff;
+            transform: translateY(-2px); box-shadow: 0 6px 15px rgba(255, 118, 117, 0.4);
+        }
+
+        .content-area { padding: 0 20px; min-height: 600px; }
+
+        .card {
+            background-color: var(--card-bg); border-radius: 18px;
+            padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow);
+            transition: transform 0.2s; border: 1px solid rgba(255,255,255,0.5);
+        }
+        .card:active { transform: scale(0.98); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .card h3 { font-size: 17px; color: #2D3436; font-weight: 700; flex: 1; }
+        .tag {
+            font-size: 10px; padding: 3px 8px; background: #E0F7FA;
+            color: #0097A7; border-radius: 6px; font-weight: 600; white-space: nowrap; margin-left: 10px;
+        }
+        .reason {
+            font-size: 13px; color: #636E72; line-height: 1.5; margin-bottom: 15px;
+            background: #FAFAFA; padding: 10px; border-radius: 8px; border-left: 3px solid #ff7675;
+        }
+        .card-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 10px; border-top: 1px dashed #eee;
+        }
+        .location { font-size: 11px; color: #B2BEC3; display: flex; align-items: center; max-width: 70%; }
+        .location::before { content: '📍'; margin-right: 4px; filter: grayscale(0.2); }
+        .btn-nav {
+            background: var(--gradient); color: #fff; font-size: 11px; font-weight: bold;
+            padding: 6px 14px; border-radius: 20px; text-decoration: none;
+            box-shadow: 0 4px 10px rgba(253, 160, 133, 0.3);
+        }
+
+        /* Toast & Admin */
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #fff; color: var(--primary); padding: 12px 25px; border-radius: 50px;
+            font-size: 13px; font-weight: bold; opacity: 0; transition: all 0.3s; z-index: 3000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 8px; pointer-events: none; width: 80%; justify-content: center;
+        }
+
+        .admin-toggle {
+            position: fixed; bottom: 25px; right: 25px; background: #fff; color: var(--primary);
+            width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 22px; cursor: pointer; z-index: 100; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .admin-panel {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60vh;
+            background-color: var(--console-bg); border-top-left-radius: 20px; border-top-right-radius: 20px;
+            z-index: 2500; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 20px; font-family: monospace; display: flex; flex-direction: column;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+        }
+        .admin-panel.open { transform: translateY(0); }
+        
+        .log-container { flex: 1; overflow-y: auto; margin-top: 15px; }
+        .log-item { margin-bottom: 10px; color: #dfe6e9; font-size: 11px; border-bottom: 1px solid #444; padding-bottom: 8px; }
+        .log-user { color: #fab1a0; font-weight: bold; display: block; margin-bottom: 2px;}
+        .log-detail { display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+    <!-- 登录层 -->
+    <div id="loginModal" class="login-modal">
+        <div class="login-box">
+            <div class="login-logo">☀️</div>
+            <div class="login-title">贵阳·活力探索指南</div>
+            <div class="login-desc">专为医师定制的健康生活地图</div>
+            
+            <div class="input-group">
+                <label class="input-label">您的姓名</label>
+                <input type="text" id="inputName" class="custom-input" placeholder="例如：张主任">
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">联系电话</label>
+                <input type="tel" id="inputPhone" class="custom-input" placeholder="用于接收定制方案">
+            </div>
+
+            <button class="btn-login" onclick="handleLogin()">开启探索之旅</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div class="header">
+        <h1 id="welcomeTitle">Hello, Doctor.</h1>
+        <p>贵阳 · 医生专属隐藏打卡地图</p>
+    </div>
+
+    <div class="nav-scroll">
+        <div class="nav-item active" onclick="switchTab('food', this)">🥣 洁净饮食</div>
+        <div class="nav-item" onclick="switchTab('drink', this)">🥃 微醺处方</div>
+        <div class="nav-item" onclick="switchTab('run', this)">🏃 晨间复健</div>
+        <div class="nav-item" onclick="switchTab('cafe', this)">☕ 学术书咖</div>
+        <div class="nav-item" onclick="switchTab('culture', this)">🏛 人文疗愈</div>
+    </div>
+
+    <div id="content" class="content-area"></div>
+
+    <div class="admin-toggle" onclick="toggleAdmin()">📊</div>
+
+    <div id="adminPanel" class="admin-panel">
+        <div style="display:flex; justify-content:space-between; color:#fff; font-weight:bold;">
+            <span>⚡ REAL-TIME USER LOGS</span>
+            <span onclick="toggleAdmin()" style="cursor:pointer">×</span>
+        </div>
+        <div id="logContainer" class="log-container">
+            <div style="color:#666; text-align:center; margin-top:50px;">Waiting for login...</div>
+        </div>
+        <button onclick="clearLogs()" style="margin-top:10px; background:#ff7675; border:none; color:white; padding:8px; border-radius:4px;">CLEAR DATA</button>
+    </div>
+
+    <script>
+        // 用户信息全局变量
+        let currentUser = { name: "", phone: "" };
+
+        // 数据库
+        const db = {
+            food: [
+                { name: "黔蘑菇·观山湖四季", tag: "无菌级", desc: "厨房可视如手术室，菌汤当日零库存。", loc: "观山湖区鉴湖路1号" },
+                { name: "老凯俚酸汤鱼(北大资源)", tag: "低嘌呤", desc: "酸汤恒温发酵罐可视，鱼肉去刺。", loc: "北大资源梦想城" },
+                { name: "泉上·发现 DISCOVERY", tag: "紫外消毒", desc: "金融城独栋玻璃房，餐前紫外消毒餐具。", loc: "观山湖区 CCPark B馆" },
+                { name: "拾禾·云之南", tag: "静音净化", desc: "同集团“裸烹”认证，包厢配静音净化器。", loc: "云岩区中天花园" },
+                { name: "银海元隆·泉上发现", tag: "低盐专区", desc: "商场独立电梯直达，设低盐黔菜专区。", loc: "银海元隆广场 B区" }
+            ],
+            drink: [
+                { name: "隐所 Jazz Lounge", tag: "≤60dB", desc: "每日限流30席，吸音软包+爵士trio现场。", loc: "南明区新华巷" },
+                { name: "安珀·威士忌图书馆", tag: "私密书房", desc: "书房式卡座，300+轻泥煤威士忌。", loc: "安珀酒店 21F" },
+                { name: "Tiny Devil", tag: "适合独处", desc: "市中心袖珍社区店，灯光≤50lux。", loc: "文昌北路华宫巷" },
+                { name: "夜航船·低酒精实验室", tag: "助眠灯光", desc: "零电视零骰子，灯光2700K助眠。", loc: "都司路高架桥下" }
+            ],
+            run: [
+                { name: "观山湖公园“环湖内圈”", tag: "膝盖友好", desc: "2.2km 塑胶道零广场舞，负氧离子4000+。", loc: "观山湖公园东北门" },
+                { name: "阅山湖“湿地悬挑步道”", tag: "白噪音", desc: "1.8km 木栈道零高差，晨间仅垂钓者。", loc: "阅山湖湿地西区" },
+                { name: "奥体中心“空中塑胶道”", tag: "晨练首选", desc: "5:30亮灯，2.5m宽无车，绕行1km×4圈。", loc: "奥体中心外环" }
+            ],
+            cafe: [
+                { name: "Nectar One Cafe", tag: "阅读灯", desc: "世界级创意咖啡，20:00后分贝≤45。", loc: "云岩区太平路" },
+                { name: "未名·古典乐咖啡", tag: "降噪耳机", desc: "仅播弦乐四重奏，提供降噪耳机。", loc: "北京路贵州饭店副楼" },
+                { name: "观山·湖景茶酤", tag: "雨声白噪", desc: "6席面湖吧台，背景白噪音，22:00熄灯。", loc: "观山湖公园西门" }
+            ],
+            culture: [
+                { name: "阳明祠·后院碑廊", tag: "静坐内省", desc: "人少碑刻多，可静坐读《传习录》。", loc: "云岩区东山路" },
+                { name: "贵州省博(负一楼)", tag: "恒温恒湿", desc: "人少，可慢读明清医籍手稿，需预约。", loc: "观山湖区林城东路" },
+                { name: "夜郎谷·宋氏古堡", tag: "天然回声", desc: "艺术家30年独建石头王国，谷地回声屏蔽喧嚣。", loc: "花溪区夜郎谷" }
+            ]
+        };
+
+        // --- 登录逻辑 ---
+        function handleLogin() {
+            const name = document.getElementById('inputName').value;
+            const phone = document.getElementById('inputPhone').value;
+
+            if (!name || !phone) {
+                showToast("⚠️ 请填写完整信息以生成定制方案");
+                return;
+            }
+
+            currentUser = { name, phone };
+            
+            // 隐藏登录页
+            document.getElementById('loginModal').style.opacity = 0;
+            setTimeout(() => {
+                document.getElementById('loginModal').style.display = 'none';
+            }, 500);
+
+            // 更新欢迎语
+            document.getElementById('welcomeTitle').innerText = `Hello, ${name}`;
+            showToast(`✨ 欢迎您，${name}`);
+
+            // 记录登录日志
+            logAction("LOGIN", "系统入口");
+        }
+
+        // --- 核心渲染 ---
+        function render(category) {
+            const container = document.getElementById('content');
+            container.innerHTML = '';
+            container.style.opacity = 0;
+            container.style.transform = "translateY(10px)";
+            
+            setTimeout(() => {
+                const list = db[category];
+                let html = '';
+                list.forEach(item => {
+                    html += `
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>${item.name}</h3>
+                                <span class="tag">${item.tag}</span>
+                            </div>
+                            <div class="reason">${item.desc}</div>
+                            <div class="card-footer">
+                                <span class="location">${item.loc}</span>
+                                <a href="javascript:void(0)" onclick="trackClick('${item.name}', '${item.tag}')" class="btn-nav">导航 Go ➤</a>
+                            </div>
+                        </div>
+                    `;
+                });
+                container.innerHTML = html;
+                container.style.opacity = 1;
+                container.style.transform = "translateY(0)";
+            }, 200);
+        }
+
+        function switchTab(cat, element) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            render(cat);
+        }
+
+        // --- 数据埋点逻辑 ---
+        function trackClick(name, tag) {
+            showToast(`📡 已记录偏好：${name}`);
+            logAction("CLICK", `${name} [${tag}]`);
+        }
+
+        function logAction(action, target) {
+            const logData = {
+                time: new Date().toLocaleTimeString(),
+                user: `${currentUser.name} (${currentUser.phone})`,
+                action: action,
+                target: target
+            };
+            
+            let logs = JSON.parse(localStorage.getItem('h5_logs_auth') || '[]');
+            logs.unshift(logData);
+            localStorage.setItem('h5_logs_auth', JSON.stringify(logs));
+
+            if(document.getElementById('adminPanel').classList.contains('open')) {
+                renderLogs();
+            }
+        }
+
+        function renderLogs() {
+            const logs = JSON.parse(localStorage.getItem('h5_logs_auth') || '[]');
+            const container = document.getElementById('logContainer');
+            
+            if (logs.length === 0) {
+                container.innerHTML = '<div style="color: #666; text-align: center; margin-top: 40px;">Waiting for data...</div>';
+                return;
+            }
+
+            let html = '';
+            logs.forEach(log => {
+                html += `
+                    <div class="log-item">
+                        <span class="log-user">👤 ${log.user}</span>
+                        <div class="log-detail">
+                            <span style="color:#74b9ff">${log.time}</span>
+                            <span style="color:#fff">${log.action}: ${log.target}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.opacity = 1;
+            toast.style.top = "50px";
+            setTimeout(() => { toast.style.opacity = 0; toast.style.top = "20px"; }, 2000);
+        }
+
+        function toggleAdmin() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('open');
+            if (panel.classList.contains('open')) renderLogs();
+        }
+
+        function clearLogs() {
+            localStorage.removeItem('h5_logs_auth');
+            renderLogs();
+        }
+
+        // Init
+        render('food');
+        document.getElementById('content').style.transition = 'all 0.4s ease';
+
+    </script>
+</body>
+</html>
